@@ -21,11 +21,48 @@ const sankey = d3Sankey.sankey()
   .nodePadding(10)
   .extent([[1, 5], [width - 1, height - 5]]);
 
+function diagram1(jmuData) {
+  // student costs data
+  const studentCosts = jmuData["student-costs"];
+
+  // Initialize nodes
+  const nodes = [];
+  // Add the left nodes
+  nodes.push({name: "JMU Student", title: "JMU Student", category: 0});
+  nodes.push({name: "Fall", title: "Fall", category: 1});
+  nodes.push({name: "Spring", title: "Spring", category: 1});
+
+  // costs for fall and spring sem
+  const fall = studentCosts.filter(
+    (item) => item.semester === "Fall" && item.type === "student itemized"
+  );
+  const spring = studentCosts.filter(
+    (item) => item.semester === "Spring" && item.type === "student itemized"
+  );
+
+  // cost item names
+  const cost = new Set();
+  fall.forEach((item) => cost.add(item.name));
+  spring.forEach((item) => cost.add(item.name));
+  cost.forEach((name) => {
+    nodes.push({name: name, title: name, category: 2}); // Add right nodes
+  });
+
+  // in-state costs
+  const totalFal = fall.reduce((sum, item) => sum + item["in-state"], 0);
+  const totalSpring = spring.reduce((sum, item) => sum + item["in-state"], 0);
+
+  return {nodes, links};
+}
 
 async function init() {
-  const data = await d3.json("data/data_sankey.json");
+  const jmudata = await d3.json("data/jmu.json");
   // Applies it to the data. We make a copy of the nodes and links objects
   // so as to avoid mutating the original.
+
+  const data = diagram1(jmuData);
+
+
   const { nodes, links } = sankey({
     // const tmp = sankey({
     nodes: data.nodes.map(d => Object.assign({}, d)),
